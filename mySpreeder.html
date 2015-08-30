@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+
+
+<html lang="en">
+
+
+
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+	<title>Title Goes Here</title>
+<script>
+
+
+
+globalWordQueue = new Array();
+globalTagQueue = new Array();
+globalTimer=0;
+wordThreshold = 5;
+setInterval(readQueue,10)
+paused = false;
+progressSize = 0;
+progressThreshold = 100;
+function readQueue(){
+if(globalWordQueue!=null && globalWordQueue.length > 0 && !paused){
+globalTimer+=10;
+printWord(globalWordQueue[0].word)
+if(globalWordQueue[0].time <=globalTimer){
+	if(globalWordQueue[0].isLast){
+		//document.body.appendChild(globalTagQueue[0])
+		globalTimer=-100;
+		globalTagQueue = globalTagQueue.splice(1,globalTagQueue.length)
+	}
+	if(progressSize>progressThreshold){
+		$("#progress").html($("#progress").html().substr($("#progress").html().indexOf(" ") + 1))
+		$("#progress").html($("#progress").html()+' '+globalWordQueue[0].word);
+		}
+	else
+	$("#progress").html($("#progress").html()+' '+globalWordQueue[0].word);
+	progressSize++;
+	globalWordQueue = globalWordQueue.splice(1,globalWordQueue.length)
+	globalTimer=0;
+}
+}
+}
+
+function addToQueue(word,time,isLast){
+o = new Object();
+o.word = word
+o.time = time
+o.isLast = isLast
+globalWordQueue.push(o);
+console.log('added' + o.word + ' ' + o.time)
+}
+
+function togglePause(){
+if(paused)
+paused=false;
+else
+paused = true;
+}
+
+function renderText(){
+if(document.getElementById("myDoc")!=null)
+	document.getElementById("myDoc").remove();
+var e = document.createElement('div');
+e.setAttribute('id', 'myDoc');
+e.setAttribute('style', 'display:none');
+e.innerHTML = $("#inputText").val();
+document.body.appendChild(e);
+speed=200
+list = new Array();
+walk(document.getElementById("myDoc"), function() {
+if(this.nodeValue!=null && this.nodeName=="#text" && this.parentElement.tagName!="SCRIPT" && this.parentElement.tagName!="STYLE")     {
+	printText(this.parentElement.tagName,this.nodeValue,speed)
+	globalTagQueue.push(this.parentElement)
+}
+     console.log(this.parentElement.tagName) + console.log(this.nodeValue) + console.log(this.nodeName)
+})
+
+}
+
+
+
+
+function printText(nodeName,nodeValue,speed){
+if(nodeName=='H1' || nodeName=='H2' || nodeName=='H3' || nodeName=='H4' || nodeName=='H5' || nodeName=='H6'){
+printIt(nodeValue,speed*2)
+}
+else{
+printIt(nodeValue,speed)
+}
+}
+
+
+function printIt(text,speed){
+words = text.trim().split(" ")
+
+for(i=0;i<words.length;i++)
+{
+if(words[i].trim().length<1)
+	continue;
+if(words[i].length > wordThreshold)
+addToQueue(words[i],((speed/wordThreshold)*(words[i].length)),i==words.length-1?true:false)
+else
+addToQueue(words[i],speed,i==words.length-1?true:false)
+}
+
+}
+
+function printWord(word){
+$("#readableText").html(word);
+
+}
+
+function walk(node, callback) {
+  var skip, tmp;
+  // This depth value will be incremented as the depth increases and
+  // decremented as the depth decreases. The depth of the initial node is 0.
+  var depth = 0;
+ 
+  // Always start with the initial element.
+  do {
+    if ( !skip ) {
+      // Call the passed callback in the context of node, passing in the
+      // current depth as the only argument. If the callback returns false,
+      // don't process any of the current node's children.
+      skip = callback.call(node, depth) === false;
+    }
+ 
+    if ( !skip && (tmp = node.firstChild) ) {
+      // If not skipping, get the first child. If there is a first child,
+      // increment the depth since traversing downwards.
+      depth++;
+    } else if ( tmp = node.nextSibling ) {
+      // If skipping or there is no first child, get the next sibling. If
+      // there is a next sibling, reset the skip flag.
+      skip = false;
+    } else {
+      // Skipped or no first child and no next sibling, so traverse upwards,
+      tmp = node.parentNode;
+      // and decrement the depth.
+      depth--;
+      // Enable skipping, so that in the next loop iteration, the children of
+      // the now-current node (parent node) aren't processed again.
+      skip = true;
+    }
+ 
+    // Instead of setting node explicitly in each conditional block, use the
+    // tmp var and set it here.
+    node = tmp;
+ 
+  // Stop if depth comes back to 0 (or goes below zero, in conditions where
+  // the passed node has neither children nore next siblings).
+  } while ( depth > 0 );
+}
+
+</script>
+
+
+
+</head>
+
+
+
+<body>
+
+<div class="window" style="width: 600px; height: 400px;">
+<table width="100%" height="100%">
+<tbody>
+<tr>
+<td id="readableText" style=" color: rgb(0, 0, 0); text-align: center; font-size: 40px;"> Speed
+</td>
+</tr>
+<!-- background-color: rgb(237, 238, 238);-->
+
+
+</tbody></table>
+</div>
+<textarea id="inputText" rows="10" cols="100"></textarea>
+<button type="button" onclick="renderText()">Click Me!</button>
+<button type="button" onclick="togglePause()">Pause/Play</button>
+<br/><br/><br/><br/>
+<div id = "progress" style=" font-size: 20px;"> </div>
+
+	
+</body>
+
+
+
+</html>
+
+
+
