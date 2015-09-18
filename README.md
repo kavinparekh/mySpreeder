@@ -1,5 +1,5 @@
 # mySpreeder
-A customised version of spreeder.com
+A customised version of http://www.spreeder.com
 
 Spreeder is a really good tool for speed reading. I have built a custom algorithm over its idea to suit to my personal requirements.
 
